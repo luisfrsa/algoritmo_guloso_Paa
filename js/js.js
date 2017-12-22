@@ -83,7 +83,7 @@ var functionGulosa= function(total,entrada,distancia,altura,caminho){
 		return {total:total,caminho:caminho};
 	}
 	valor_subir = subir(entrada,distancia,altura);
-	valor_manter = manter(entrada,distancia,altura);
+	valor_manter = manter(entrada,distancia,altura); 
 	valor_descer = descer(entrada,distancia,altura);
 	
 	
