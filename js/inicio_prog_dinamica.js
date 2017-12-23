@@ -11,23 +11,8 @@ var entradas = [
 		[1,9,9,1],
 		[1,-9,-9,1]
 	],
-	[
-		[1,1,1,1],
-		[1,1,1,1],
-		[1,1,1,1],
-		[1,1,1,1],
-		[1,1,1,1],
-		[5,1,1,1], 
-		[15,16,17,18],
-		[3,8,-9,14],
-		[2,-7,10,-13],
-		[1,6,11,12]
-	],
+	
 ];
-/*
-PELA ALTURA DA PARA SABER QUAIS RANGES SÃO PERMITIDOS (ANTES DE CHEGAR NO FIM, ALTURAS >X TEM VALOR MAX)
-
-*/
 var entrada = entradas[0];
 
 var valores = JSON.parse(JSON.stringify(entrada));
@@ -75,34 +60,71 @@ var descer= function(entrada,distancia,altura){
 	return Number.MAX_SAFE_INTEGER;
 }
 function dinamica(entrada,distancia,altura){
+	var ranges = getMinMax(entrada);
+	console.log(arguments);
+	if(distancia>ranges.horiz.max){
+		console.log('{total:0,altura:altura,opcao:[],alturas:[],valores:[],numeros:[]}');
+		return {total:0,altura:altura,opcao:[],alturas:[],valores:[],numeros:[]};
+	}
+
+	if(distancia==ranges.horiz.max){
+		console.log('{total:0,altura:altura,opcao:[],alturas:[],valores:[],numeros:[]}');
+		return {total:0,altura:altura,opcao:[],alturas:[],valores:[],numeros:[]};
+	}
 	var melhor_subir  = dinamica(entrada,distancia+1,altura+1);
 	var melhor_manter = dinamica(entrada,distancia+1,altura);
-	var melhor_descer = dinamica(entrada,distancia+1,altura-1);
+	if(altura > 0){
+		var melhor_descer = dinamica(entrada,distancia+1,altura-1);
+	}
 
 	valor_subir = subir(entrada,distancia,altura);
 	valor_manter = manter(entrada,distancia,altura); 
 	valor_descer = descer(entrada,distancia,altura);
 
-	var melhor_recursivo = {total:Number.MAX_SAFE_INTEGER};
+	var melhor_recursivo = melhor_subir;
 	var melhor_altura;
+	var maior = Number.MAX_SAFE_INTEGER;
+	if(typeof(melhor_subir)!=='undefined'){
+		if(maior > melhor_subir.total){
+			maior =melhor_subir.total; 
+			melhor_altura = altura+1;
+			melhor_recursivo = melhor_subir;
+		}
+	}
+	if(typeof(melhor_manter)!=='undefined'){
+		if(maior > melhor_manter.total){
+			maior =melhor_manter.total;
+			melhor_altura = altura;
+			melhor_recursivo = melhor_manter;
+		}
+	}
+	if(typeof(melhor_descer)!=='undefined'){
+		if(maior > melhor_descer.total){
+			maior =melhor_descer.total;
+			melhor_altura = altura-1;
+			melhor_recursivo = melhor_descer;
+		}
+	}
+	var melhores_locais = getMelhor(melhor_recursivo.altura,
+							  valor_subir,
+							  valor_manter,
+							  valor_descer);
 	
-	if(maior_recursivo.total > melhor_subir.total){
-		melhor_altura = altura+1;
-		maior_recursivo = melhor_subir;
-	}
-
-	if(maior_recursivo.total > melhor_manter.total){
-		melhor_altura = altura;
-		maior_recursivo = melhor_manter;
-	}
-	if(maior_recursivo.total > melhor_descer.total){
-		melhor_altura = altura-1;
-		maior_recursivo = melhor_descer;
-	}
-
-	var melhores_locais = getMelhor(maior_recursivo.altura,valor_subir+config.subir,valor_manter+config.manter,valor_descer+config.descer);
-
-	return {};
+	melhor_recursivo.opcao.push(melhores_locais.opcao);
+	melhor_recursivo.alturas.push(melhor_recursivo.altura);
+	melhor_recursivo.valores.push(melhores_locais.melhor);
+	melhor_recursivo.numeros.push(melhores_locais.numero);
+	var ret =  {
+		total:(melhores_locais.melhor+melhor_recursivo.total),
+		altura:melhores_locais.nova_altura,
+		opcao:melhor_recursivo.opcao,
+		alturas:melhor_recursivo.alturas,
+		valores:melhor_recursivo.valores,
+		numeros:melhor_recursivo.numeros
+	};
+	console.log("Retorno->");
+	console.log(ret);
+	return ret;
 }
 var functionGulosa= function(entrada,distancia,altura,caminho){
 	caminho = caminho || [];
@@ -114,8 +136,8 @@ var functionGulosa= function(entrada,distancia,altura,caminho){
 	valor_subir = subir(entrada,distancia,altura);
 	valor_manter = manter(entrada,distancia,altura); 
 	valor_descer = descer(entrada,distancia,altura);
-}
-functionGulosa(entrada,distancia+1,altura+1,caminho);
+}/*
+var functionGulosa(entrada,distancia+1,altura+1,caminho);
 	
 	var melhores = getMelhor(altura,valor_subir+config.subir,valor_manter+config.manter,valor_descer+config.descer);
 	total+= melhores.melhor;
@@ -126,25 +148,36 @@ functionGulosa(entrada,distancia+1,altura+1,caminho);
 
 	return functionGulosa(total,entrada,distancia+1,melhores.nova_altura,caminho);
 }	
+*/
 var getMelhor = function(altura,valor_subir,valor_manter,valor_descer){
 	var melhor = Number.MAX_SAFE_INTEGER;
 	var nova_altura;
-	if(melhor > valor_subir){
-		melhor = valor_subir;
+	var numero;
+	if(melhor > valor_subir+config.subir){
+		numero = valor_subir*-1;
+		melhor = valor_subir+config.subir;
 		nova_altura = altura+1;
 		opcao = "sobe";
 	}
-	if(melhor > valor_manter){
-		melhor = valor_manter;
+	if(melhor > valor_manter+config.manter){
+		numero = valor_manter*-1;
+		melhor = valor_manter+config.manter;
 		nova_altura = altura;
 		opcao = "mantem";
 	}
-	if(melhor > valor_descer){
-		melhor = valor_descer;
+	if(melhor > valor_descer+config.descer){
+		numero = valor_descer*-1;
+		melhor = valor_descer+config.descer;
 		nova_altura = altura-1;
 		opcao = "desce";
 	}
-	return {melhor:melhor,nova_altura:nova_altura,opcao:opcao};
+	return {melhor:melhor,nova_altura:nova_altura,opcao:opcao,numero:numero};
+}
+var func_reduce = function(el){
+	if(typeof(el)==='object'){
+		return func_reduce(el)+"<br>";
+	}
+	return el+", ";
 }
 var ready = function(){
 //$('#entrada').html(entrada.join('\n'));
@@ -153,11 +186,12 @@ $('#entrada').html(entrada.join('<br>'));
 	entrada.reverse();
 
 	console.log(entrada);
-	var resultado = functionGulosa(entrada,0,0,[]);
+	var resultado = dinamica(entrada,0,0);
 	console.log(resultado);
+	return;
 	var html = "<br>Total: "+resultado.total;
 	html+="<br>";
-	html+="Caminho: "+resultado.caminho.join(', ');
+	html+="Caminho: "+resultado.reduce(func_reduce);
 	$('#resultado').html(html);
 
 	$('#entrada').on('change',function(){

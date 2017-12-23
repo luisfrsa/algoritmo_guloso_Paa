@@ -1,3 +1,7 @@
+var addHTML = function(str){
+	var currHTML = $('#resultado').html();
+	$('#resultado').html(currHTML+"<br>"+str);
+};
 var entradas = [
 	[
 		[1,1,1,1],
@@ -90,9 +94,9 @@ var functionGulosa= function(total,entrada,distancia,altura,caminho){
 	var melhores = getMelhor(altura,valor_subir+config.subir,valor_manter+config.manter,valor_descer+config.descer);
 	total+= melhores.melhor;
 	caminho.push(melhores.opcao);
-	console.log("Atual: "+ entrada[distancia][altura]+", Distancia: "+ distancia+", Altura: "+altura);
-	console.log("Subir : "+valor_subir+":"+(valor_subir+config.subir)+", Manter : "+valor_manter+":"+(valor_manter+config.manter)+", Descer : "+valor_descer+":"+(valor_descer+config.descer));
-	console.log("Total: "+total);
+	addHTML("Atual: "+ entrada[distancia][altura]+", Distancia: "+ distancia+", Altura: "+altura);
+	addHTML("Subir : "+valor_subir+":"+(valor_subir+config.subir)+", Manter : "+valor_manter+":"+(valor_manter+config.manter)+", Descer : "+valor_descer+":"+(valor_descer+config.descer));
+	addHTML("Total: "+total);
 	return functionGulosa(total,entrada,distancia+1,melhores.nova_altura,caminho);
 }	
 var getMelhor = function(altura,valor_subir,valor_manter,valor_descer){
@@ -115,22 +119,20 @@ var getMelhor = function(altura,valor_subir,valor_manter,valor_descer){
 	}
 	return {melhor:melhor,nova_altura:nova_altura,opcao:opcao};
 }
+
 var ready = function(){
 //$('#entrada').html(entrada.join('\n'));
 $('#entrada').html(entrada.join('<br>'));
 
 	entrada.reverse();
 
-	console.log(entrada);
+	//console.log(entrada);
 	var resultado = functionGulosa(0,entrada,0,0,[]);
-	console.log(resultado);
+	//console.log(resultado);
 	var html = "<br>Total: "+resultado.total;
 	html+="<br>";
 	html+="Caminho: "+resultado.caminho.join(', ');
-	$('#resultado').html(html);
-
-	$('#entrada').on('change',function(){
-		console.log($(this).val());
-	});
+	addHTML(html);
+	
 }
 $(document).ready(ready);
