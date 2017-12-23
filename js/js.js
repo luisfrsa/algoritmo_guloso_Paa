@@ -74,8 +74,37 @@ var descer= function(entrada,distancia,altura){
 	}
 	return Number.MAX_SAFE_INTEGER;
 }
+function dinamica(entrada,distancia,altura){
+	var melhor_subir  = dinamica(entrada,distancia+1,altura+1);
+	var melhor_manter = dinamica(entrada,distancia+1,altura);
+	var melhor_descer = dinamica(entrada,distancia+1,altura-1);
 
-var functionGulosa= function(total,entrada,distancia,altura,caminho){
+	valor_subir = subir(entrada,distancia,altura);
+	valor_manter = manter(entrada,distancia,altura); 
+	valor_descer = descer(entrada,distancia,altura);
+
+	var melhor_recursivo = {total:Number.MAX_SAFE_INTEGER};
+	var melhor_altura;
+	
+	if(maior_recursivo.total > melhor_subir.total){
+		melhor_altura = altura+1;
+		maior_recursivo = melhor_subir;
+	}
+
+	if(maior_recursivo.total > melhor_manter.total){
+		melhor_altura = altura;
+		maior_recursivo = melhor_manter;
+	}
+	if(maior_recursivo.total > melhor_descer.total){
+		melhor_altura = altura-1;
+		maior_recursivo = melhor_descer;
+	}
+
+	var melhores_locais = getMelhor(maior_recursivo.altura,valor_subir+config.subir,valor_manter+config.manter,valor_descer+config.descer);
+
+	return {};
+}
+var functionGulosa= function(entrada,distancia,altura,caminho){
 	caminho = caminho || [];
 	var ranges = getMinMax(entrada);
 	var nova_altura;
@@ -85,7 +114,8 @@ var functionGulosa= function(total,entrada,distancia,altura,caminho){
 	valor_subir = subir(entrada,distancia,altura);
 	valor_manter = manter(entrada,distancia,altura); 
 	valor_descer = descer(entrada,distancia,altura);
-	
+}
+functionGulosa(entrada,distancia+1,altura+1,caminho);
 	
 	var melhores = getMelhor(altura,valor_subir+config.subir,valor_manter+config.manter,valor_descer+config.descer);
 	total+= melhores.melhor;
@@ -93,6 +123,7 @@ var functionGulosa= function(total,entrada,distancia,altura,caminho){
 	console.log("Atual: "+ entrada[distancia][altura]+", Distancia: "+ distancia+", Altura: "+altura);
 	console.log("Subir : "+valor_subir+":"+(valor_subir+config.subir)+", Manter : "+valor_manter+":"+(valor_manter+config.manter)+", Descer : "+valor_descer+":"+(valor_descer+config.descer));
 	console.log("Total: "+total);
+
 	return functionGulosa(total,entrada,distancia+1,melhores.nova_altura,caminho);
 }	
 var getMelhor = function(altura,valor_subir,valor_manter,valor_descer){
@@ -122,7 +153,7 @@ $('#entrada').html(entrada.join('<br>'));
 	entrada.reverse();
 
 	console.log(entrada);
-	var resultado = functionGulosa(0,entrada,0,0,[]);
+	var resultado = functionGulosa(entrada,0,0,[]);
 	console.log(resultado);
 	var html = "<br>Total: "+resultado.total;
 	html+="<br>";
